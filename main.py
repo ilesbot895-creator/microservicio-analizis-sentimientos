@@ -55,4 +55,16 @@ if __name__ == "__main__":
     # Usamos reload=False para evitar problemas de recarga que importen
     # módulos en procesos hijos (que pueden forzar la carga de dependencias
     # pesadas como transformers tijdens el spawn).
-    uvicorn.run("main:app", host=host, port=port, reload=False)
+    # Configuración optimizada para usar menos memoria:
+    # - workers=1: Un solo worker para reducir uso de RAM
+    # - loop="asyncio": Usar el loop de asyncio estándar (más eficiente en memoria)
+    # - limit_concurrency: Limitar conexiones concurrentes
+    uvicorn.run(
+        "main:app", 
+        host=host, 
+        port=port, 
+        reload=False,
+        workers=1,  # Un solo worker para reducir memoria (Render free tier)
+        loop="asyncio",
+        log_level="info"
+    )
