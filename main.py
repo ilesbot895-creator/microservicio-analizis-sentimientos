@@ -33,6 +33,21 @@ def health_check():
 if __name__ == "__main__":
     # Ejecutar con uvicorn cuando se lance directamente: `python main.py`
     import uvicorn
+    import os
+
+    # Obtener el puerto de la variable de entorno PORT (para Render, Heroku, etc.)
+    # Si no existe, usar 8000 como valor por defecto para desarrollo local
+    port = int(os.environ.get("PORT", 8000))
+    
+    # Detectar si estamos en producción (Render, Heroku, etc.) o en desarrollo local
+    # Si existe PORT, estamos en producción y usamos 0.0.0.0 para acceso externo
+    # Si no existe PORT, estamos en local y usamos 127.0.0.1
+    if os.environ.get("PORT"):
+        # Producción: usar 0.0.0.0 para que sea accesible desde fuera
+        host = os.environ.get("HOST", "0.0.0.0")
+    else:
+        # Desarrollo local: usar 127.0.0.1 (localhost)
+        host = os.environ.get("HOST", "127.0.0.1")
 
     # Nota: hemos desactivado la UI de documentación automática en la instancia
     # de FastAPI (docs_url/redoc_url/openapi_url = None), por lo que /docs y
@@ -40,4 +55,4 @@ if __name__ == "__main__":
     # Usamos reload=False para evitar problemas de recarga que importen
     # módulos en procesos hijos (que pueden forzar la carga de dependencias
     # pesadas como transformers tijdens el spawn).
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("main:app", host=host, port=port, reload=False)
