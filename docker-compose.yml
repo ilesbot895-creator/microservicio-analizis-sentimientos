@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  pysentiment:
+    build: .
+    container_name: pysentiment-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # Forzar CPU (no GPU)
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+      - TOKENIZERS_PARALLELISM=false
+      - CUDA_VISIBLE_DEVICES=
+      - OMP_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - PYTORCH_NO_CUDA_MEMORY_CACHING=1
+      - FORCE_CPU=1
+    restart: unless-stopped
+    # Limitar memoria a 512MB (Render free tier)
+    mem_limit: 512m
+    mem_reservation: 400m
+    # Asegurar que no use GPU
+    deploy:
+      resources:
+        reservations:
+          devices: []
+
