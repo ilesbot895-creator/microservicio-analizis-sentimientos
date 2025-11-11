@@ -11,6 +11,15 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Deshabilitar CUDA completamente
 os.environ["OMP_NUM_THREADS"] = "1"  # Limitar threads de OpenMP
 os.environ["MKL_NUM_THREADS"] = "1"  # Limitar threads de MKL
 
+# Configurar caché de Hugging Face para usar modelo pre-descargado en Docker
+# Estas variables se establecen en el Dockerfile, pero las establecemos aquí también
+# para asegurar que se usen incluso si no están en el entorno
+# El modelo se pre-descarga durante el build de Docker para evitar errores 429
+cache_dir = os.environ.get("HF_HOME", "/app/.cache/huggingface")
+os.environ.setdefault("HF_HOME", cache_dir)
+os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(cache_dir, "transformers"))
+os.environ.setdefault("HF_DATASETS_CACHE", os.path.join(cache_dir, "datasets"))
+
 # No importamos pysentimiento a nivel de módulo para evitar cargas pesadas
 # (p. ej. transformers) cuando se importa este módulo. Inicializaremos el
 # analizador de forma perezosa (lazy) en la primera petición.
@@ -36,6 +45,8 @@ def get_analyzer():
         # Inicializar el analizador (costoso) sólo cuando se necesite.
         # CUDA ya está deshabilitado en las variables de entorno del módulo
         # El modelo se carga en CPU automáticamente (CUDA deshabilitado)
+        # NOTA: El modelo se pre-descargó durante el build de Docker, por lo que
+        # se cargará desde el caché local (/app/.cache/huggingface) sin descargar de Internet
         sentiment_analyzer = create_analyzer(task="sentiment", lang="es")
         
         # Asegurar que el modelo esté en modo evaluación (no entrenamiento)

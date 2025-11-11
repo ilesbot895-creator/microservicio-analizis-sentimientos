@@ -31,7 +31,9 @@ ENV/
 # *.md
 # !README.md
 
-# Cache y modelos (se descargarán en runtime)
+# Cache y modelos del host (NO excluir el caché creado DENTRO del contenedor durante el build)
+# Nota: El caché de Hugging Face se crea DURANTE el build del Dockerfile (RUN command),
+# por lo que NO se ve afectado por .dockerignore. Solo excluimos el caché del host local.
 .cache/
 .pytest_cache/
 .huggingface/
@@ -43,6 +45,8 @@ transformers_cache/
 *.pt
 *.pth
 models/
+# IMPORTANTE: El caché dentro de /app/.cache/huggingface en el contenedor
+# se crea durante el build y NO se excluye aquí
 
 # Logs
 *.log
